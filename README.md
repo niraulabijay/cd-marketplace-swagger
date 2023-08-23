@@ -1,3 +1,5 @@
-# accounting-swagger
-## URL : https://scodus.github.io/accounting-swagger/
-Accounting Api Sawagger
+# api-swagger
+
+## URL : https://niraulabijay.github.io/cd-marketplace-swagger/
+
+Api Swagger
