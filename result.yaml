@@ -5,10 +5,57 @@
   servers:
     - url: https://dev.mksiegowosc.cashdirector.io
   tags:
+    - name: Authorization
     - name: Company
     - name: User
     - name: Accounting office
   paths:
+    /api/oauth/authorize:
+      post:
+        tags:
+          - Authorization
+        description: Acquisition of data for authorisation.
+        requestBody:
+          description: The user to create.
+          content:
+            text/json:
+              schema:
+                type: object
+                required:
+                  - clientId
+                  - clientSecret
+                  - authCode
+                properties:
+                  clientId:  
+                    type: string
+                    description: System ID using authorisation
+                    example: 'hrm'
+                  clientSecret:
+                    type: string
+                    description: Authentication password for system using authorisation
+                    example: 'Sent by SMS to Kamil'
+                  authCode:
+                    type: string
+                    description: Temporary token provided by CashDirector (ssoToken)
+                    example: 'a6eb956a-94e8-454a-aec3-ad31d3ba30d9'
+        responses:
+          '200':
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AuthData'
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'        
+          '404':
+            description: Accounting office found
+        security:
+          - bearerAuth: []
+
+
+
     /api/companies:
       get:
         tags:
@@ -160,7 +207,6 @@
             description: Accounting office found
         security:
           - bearerAuth: []   
-
     /api/partners/hrm/status:
       put:
         tags:
@@ -434,6 +480,33 @@
             example: 'wielkopolskie'                
         xml:
           name: accountingOfficeAddress     
+      AuthData:
+        type: object
+        properties:
+          token:
+            type: string
+            description: Authorisation token
+            example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE2NjE5NTQ3NDcsImV4cCI6MTY5Nzk1NDc0Nywic3ViIjoiNzY2MyJ9.C_3T3DP3ANMl0sWK89CWgRGuyzsa1C5uNbWnemiTsRuydAcnsBTjgBPX57cFOzBqPyWVYpGSqvcd8zDgSEingU5_oS6py6u1bFqILBWtFteYSpXzX6C1lbg00T2wDOTmzZmCXAXvoxXiNSZSsAUyWum9lJO8H_Q3knUDnbML_D5b5UbKWsClOXbHFMzrHWWb_wMZJErS85gFCTCqFJBg_GjJrs_qInpmeclvDdoCnchCntvfeFAvQIeiOC59cpmCbiVkJQneMiyjEi8_pmFqEDP26br98sE5v7H7cXzoITTK_iGA7TOhf43wD5YDL7UqsTrUndCkzwHJP8uM-86Pqg'
+          refreshToken:
+            type: string
+            description: Authorisation token refreshment token
+            example: 'efd0e40bf39d3fafce5e379bce45cfa49224a4af2c7af4cc7db6777f27585a57cccd99b9526b0afe0c22d3c306fb5312a1bb9d7311e5c9b93a5b899fd25335ac'
+          userId:
+            type: integer
+            description: User ID
+            example: 8206
+          companyId:
+            type: integer
+            nullable: true
+            description: Company ID
+            example: 7926
+          aoId:
+            type: integer
+            nullable: true
+            description: Accounting Office ID - NOT ADDED TO ENDPOINT, available from October 
+            example: 1
+        xml:
+          name: authdata
     securitySchemes:
       bearerAuth:            # arbitrary name for the security scheme
         type: http
