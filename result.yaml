@@ -1,517 +1,533 @@
-  openapi: 3.0.1
-  info:
-    title: API
-    version: 1.0.11
-  servers:
-    - url: https://dev.mksiegowosc.cashdirector.io
-  tags:
-    - name: Authorization
-    - name: Company
-    - name: User
-    - name: Accounting office
-  paths:
-    /api/oauth/authorize:
-      post:
-        tags:
-          - Authorization
-        description: Acquisition of data for authorisation.
-        requestBody:
-          description: The user to create.
+openapi: 3.0.1
+info:
+  title: API
+  version: 1.0.11
+servers:
+  - url: https://dev.mksiegowosc.cashdirector.io
+tags:
+  - name: Authorization
+  - name: Company
+  - name: User
+  - name: Accounting office
+paths:
+  /api/oauth/authorize:
+    post:
+      tags:
+        - Authorization
+      description: Acquisition of data for authorisation.
+      requestBody:
+        description: The user to create.
+        content:
+          text/json:
+            schema:
+              type: object
+              required:
+                - clientId
+                - clientSecret
+                - authCode
+              properties:
+                clientId:  
+                  type: string
+                  description: System ID using authorisation
+                  example: 'hrm'
+                clientSecret:
+                  type: string
+                  description: Authentication password for system using authorisation
+                  example: 'Sent by SMS to Kamil'
+                authCode:
+                  type: string
+                  description: Temporary token provided by CashDirector (ssoToken)
+                  example: 'a6eb956a-94e8-454a-aec3-ad31d3ba30d9'
+      responses:
+        '200':
+          description: Successful operation
           content:
-            text/json:
+            application/json:
               schema:
-                type: object
-                required:
-                  - clientId
-                  - clientSecret
-                  - authCode
-                properties:
-                  clientId:  
-                    type: string
-                    description: System ID using authorisation
-                    example: 'hrm'
-                  clientSecret:
-                    type: string
-                    description: Authentication password for system using authorisation
-                    example: 'Sent by SMS to Kamil'
-                  authCode:
-                    type: string
-                    description: Temporary token provided by CashDirector (ssoToken)
-                    example: 'a6eb956a-94e8-454a-aec3-ad31d3ba30d9'
-        responses:
-          '200':
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/AuthData'
-          '401':
-            $ref: '#/components/responses/UnauthorizedError'        
-          '404':
-            description: Accounting office found
-        security:
-          - bearerAuth: []
-
-
-
-    /api/companies:
-      get:
-        tags:
-          - Company
-        description: Use endpoint when asking for company data with the accounting office token.
-        parameters:
-          - name: managedBy
-            in: query
-            description: Accounting office ID
-            example: 1
-            required: true
-            schema:
-              type: integer
-              format: int64
-        responses:
-          '200':
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Companies'
-          '401':
-            $ref: '#/components/responses/UnauthorizedError'          
-          '404':
-            description: Companies not found
-        security:
-          - bearerAuth: []
-    /api/companies/{companyID}:
-      get:
-        tags:
-          - Company
-        description: Use endpoint when asking for company data with a company token.
-        parameters:
-          - name: companyID
-            in: path
-            description: Company ID
-            required: true
-            example: 6455
-            schema:
-              type: integer
-              format: int64
-        responses:
-          '200':
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Companies'
-          '401':
-            $ref: '#/components/responses/UnauthorizedError'          
-          '404':
-            description: Companies not found
-        security:
-          - bearerAuth: []
-    /api/users:
-      get:
-        tags:
-          - User
-        description: Use if you want to download all company users or all accounting office users.
-        parameters:
-          - name: companyId
-            in: query
-            description: Company ID - Use if you want to retrieve company users by company ID.
-            example: 8706
-            required: false
-            schema:
-              type: integer
-              format: int64
-          - name: accountingOfficeId
-            in: query
-            description: Accounting Office ID - Use if you want to retrieve accounting office users by accounting office ID.
-            example: 1
-            required: false
-            schema:
-              type: integer
-              format: int64
-        responses:
-          '200':
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/User'
-          '401':
-            $ref: '#/components/responses/UnauthorizedError'          
-          '404':
-            description: Users not found
-        security:
-          - bearerAuth: []
-    /api/users/{userID}:
-      get:
-        tags:
-          - User
-        description: Use endpoint when asking for user data with a company token.
-        parameters:
-          - name: userID
-            in: path
-            description: User ID
-            example: 8706
-            required: true
-            schema:
-              type: integer
-              format: int64
-        responses:
-          '200':
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/User'
-          '401':
-            $ref: '#/components/responses/UnauthorizedError'          
-          '404':
-            description: Users not found
-        security:
-          - bearerAuth: []
-    /api/accounting-offices/{aoId}:
-      get:
-        tags:
-          - Accounting office
-        description: Information about the accounting office. Can be queried with the accounting office token and with the company token.
-        parameters:
-          - name: aoId
-            in: path
-            description: Accounting office ID
-            example: 1
-            required: true
-            schema:
-              type: integer
-              format: int64
-        responses:
-          '200':
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/AccountingOffice'
-          '401':
-            $ref: '#/components/responses/UnauthorizedError'        
-          '404':
-            description: Accounting office found
-        security:
-          - bearerAuth: []   
-    /api/partners/hrm/status:
-      put:
-        tags:
-          - HRM Status
-        description: Update of company, user and accounting office status information in HRM.
-        requestBody:
-          description: The user to create.
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuthData'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'        
+        '404':
+          description: Accounting office found
+      security:
+        - bearerAuth: []
+  /api/companies:
+    get:
+      tags:
+        - Company
+      description: Use endpoint when asking for company data with the accounting office token.
+      parameters:
+        - name: managedBy
+          in: query
+          description: Accounting office ID
+          example: 1
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: blocked
+          in: query
+          description: Display active or inactive companies
+          example: false
+          required: false
+          schema: 
+            type: string
+            enum: 
+            - true 
+            - false
+      responses:
+        '200':
+          description: Successful operation
           content:
-            text/json:
+            application/json:
               schema:
-                type: object
-                required:
-                  - status
-                properties:
-                  status:         
-                    type: string
-                    description: Status in HRM
-                    enum:
-                      - ACTIVATED
-                      - ARCHIVED
-                  userId:  
-                    type: integer
-                    description: User ID
-                    example: 8206
-                  companyId:
-                    type: integer
-                    description: Company ID
-                    example: 7926
-                  aoId:
-                    type: integer
-                    description: Accounting Office ID
-                    example: 1
-        responses:
-          '200':
-            description: Successful operation
-          '401':
-            $ref: '#/components/responses/UnauthorizedError'        
-          '404':
-            description: Accounting office found
-        security:
-          - bearerAuth: []
-
-  components:
-    schemas:
-      Companies:
-        type: object
-        properties: 
-          id:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Companies'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'          
+        '404':
+          description: Companies not found
+      security:
+        - bearerAuth: []
+  /api/companies/{companyID}:
+    get:
+      tags:
+        - Company
+      description: Use endpoint when asking for company data with a company token.
+      parameters:
+        - name: companyID
+          in: path
+          description: Company ID
+          required: true
+          example: 6455
+          schema:
             type: integer
-            description: Company ID
-            example: 6455
-          address:
-              $ref: '#/components/schemas/CompanyAddress'
-          name: 
-            type: string 
-            description: Company name
-            example: "Polski Cukier Janusz Nowak"
-          shortname: 
-            type: string
-            nullable: true
-            description: Company shortname
-            example: "Polski Cukier"
-          taxId:
-            type: array
-            nullable: true
-            description: Tax ID
-            items:
-              $ref: '#/components/schemas/TaxId'  
-          regon: 
-            type: string
-            nullable: true    
-            description: REGON
-            example: "013913354"
-          krs: 
-            type: string
-            nullable: true
-            description: KRS
-            example: "0000034671"
-          email: 
-            type: string
-            description: Company contact email
-            example: "test1@cashdirector.com"
-          phone: 
-            type: string
-            nullable: true
-            description: Company contact phone number
-            example: "48737321123"
-          managingAccountingOfficeId:
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Companies'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'          
+        '404':
+          description: Companies not found
+      security:
+        - bearerAuth: []
+  /api/users:
+    get:
+      tags:
+        - User
+      description: Use if you want to download all company users or all accounting office users.
+      parameters:
+        - name: companyId
+          in: query
+          description: Company ID - Use if you want to retrieve company users by company ID.
+          example: 8706
+          required: false
+          schema:
             type: integer
-            nullable: true
-            description: Company accounting office ID
-            example: 1
-        xml:
-          name: companies
-      TaxId:
-        type: object
-        properties:
-          type:
-            type: string
-            description: Type of tax ID
-            example: "NIP"
-          value:
-            type: string
-            description: tax ID
-            example: "1568678909"
-        xml:
-          name: taxId     
-      CompanyAddress:
-        type: object
-        properties:
-          street:
-            type: string
-            nullable: true
-            description: Street
-            example: 'Serbska'
-          house:
-            type: string
-            nullable: true
-            description: House number
-            example: '31A'
-          flat:
-            type: string  
-            nullable: true
-            description: Flat number
-            example: '15'
-          postcode:
-            type: string
-            nullable: true
-            description: Postal code
-            example: '62-035'   
-          city:
-            type: string
-            nullable: true
-            description: City
-            example: 'Kórnik'  
-          district:
-            type: string
-            nullable: true
-            description: District
-            example: 'poznański' 
-          commune:
-            type: string
-            nullable: true
-            description: Commune
-            example: 'Kórnik'   
-          voivodeship:   
-            type: string
-            nullable: true 
-            description: Voivodeship
-            example: 'wielkopolskie' 
-          country:
-            type: string
-            nullable: true 
-            description: Country
-            example: 'PL'
-        xml:
-          name: companyAddress
-      User:
-        type: object
-        properties:
-          id:
+            format: int64
+        - name: accountingOfficeId
+          in: query
+          description: Accounting Office ID - Use if you want to retrieve accounting office users by accounting office ID.
+          example: 1
+          required: false
+          schema:
             type: integer
-            description: User ID
-            example: 8706
-          email:
+            format: int64
+        - name: blocked
+          in: query
+          description: Display active or inactive users
+          example: false
+          required: false
+          schema: 
             type: string
-            nullable: true 
-            description: User email address
-            example: "mklimkowski+testHRM@cashdirector.com"
-          firstname:
-            type: string
-            nullable: true 
-            description: First name
-            example: "Maciej"
-          lastname:
-            type: string
-            nullable: true 
-            description: Last name
-            example: "Testowy"
-        xml:
-          name: user
-      AccountingOffice:
-        type: object
-        properties: 
-          id: 
+            enum: 
+            - true 
+            - false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'          
+        '404':
+          description: Users not found
+      security:
+        - bearerAuth: []
+  /api/users/{userID}:
+    get:
+      tags:
+        - User
+      description: Use endpoint when asking for user data with a company token.
+      parameters:
+        - name: userID
+          in: path
+          description: User ID
+          example: 8706
+          required: true
+          schema:
             type: integer
-            description: Accounting Office ID
-            example: 6455
-          name:
-            type: string
-            description: Accounting Office name
-            example: "Biuro Księgowo-Podatkowe Maria Rybacka"
-          address:
-            $ref: '#/components/schemas/AccountingOfficeAddress'
-          shortname: 
-            type: string
-            nullable: true
-            description: Accounting Office shortname
-            example: "Biuro K-P Maria Rybacka"
-          taxId:
-              $ref: '#/components/schemas/TaxId'     
-          regon: 
-            type: string
-            nullable: true   
-            description: REGON
-            example: "212246151" 
-          email: 
-            type: string 
-            nullable: true 
-            description: Accounting Office contact email
-            example: "biurorach+test@cashdirector.com"
-          phone: 
-            type: string
-            nullable: true  
-            description: Accounting Office contact phone number
-            example: "48123123123"    
-        xml:
-          name: accountingOffice
-      AccountingOfficeAddress:
-        type: object
-        properties:
-          country:
-            type: string
-            nullable: true 
-            description: Country
-            example: 'PL' 
-          street:
-            type: string
-            nullable: true
-            description: Street
-            example: 'Wodna'
-          house:
-            type: string
-            nullable: true
-            description: House number
-            example: '100'
-          flat:
-            type: string  
-            nullable: true
-            description: Flat number
-            example: '33'
-          postcode:
-            type: string
-            nullable: true
-            description: Postal code
-            example: '61-618'
-          post:
-            type: string
-            nullable: true
-            description: Post
-            example: 'Poznań-Stare Miasto'
-          city:
-            type: string
-            nullable: true
-            description: City
-            example: 'Poznań' 
-          district:
-            type: string
-            nullable: true
-            description: District
-            example: 'poznań' 
-          commune:
-            type: string
-            nullable: true
-            description: Commune
-            example: 'Poznań'   
-          voivodeship:   
-            type: string
-            nullable: true 
-            description: Voivodeship
-            example: 'wielkopolskie'                
-        xml:
-          name: accountingOfficeAddress     
-      AuthData:
-        type: object
-        properties:
-          token:
-            type: string
-            description: Authorisation token
-            example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE2NjE5NTQ3NDcsImV4cCI6MTY5Nzk1NDc0Nywic3ViIjoiNzY2MyJ9.C_3T3DP3ANMl0sWK89CWgRGuyzsa1C5uNbWnemiTsRuydAcnsBTjgBPX57cFOzBqPyWVYpGSqvcd8zDgSEingU5_oS6py6u1bFqILBWtFteYSpXzX6C1lbg00T2wDOTmzZmCXAXvoxXiNSZSsAUyWum9lJO8H_Q3knUDnbML_D5b5UbKWsClOXbHFMzrHWWb_wMZJErS85gFCTCqFJBg_GjJrs_qInpmeclvDdoCnchCntvfeFAvQIeiOC59cpmCbiVkJQneMiyjEi8_pmFqEDP26br98sE5v7H7cXzoITTK_iGA7TOhf43wD5YDL7UqsTrUndCkzwHJP8uM-86Pqg'
-          refreshToken:
-            type: string
-            description: Authorisation token refreshment token
-            example: 'efd0e40bf39d3fafce5e379bce45cfa49224a4af2c7af4cc7db6777f27585a57cccd99b9526b0afe0c22d3c306fb5312a1bb9d7311e5c9b93a5b899fd25335ac'
-          userId:
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'          
+        '404':
+          description: Users not found
+      security:
+        - bearerAuth: []
+  /api/accounting-offices/{aoId}:
+    get:
+      tags:
+        - Accounting office
+      description: Information about the accounting office. Can be queried with the accounting office token and with the company token.
+      parameters:
+        - name: aoId
+          in: path
+          description: Accounting office ID
+          example: 1
+          required: true
+          schema:
             type: integer
-            description: User ID
-            example: 8206
-          companyId:
-            type: integer
-            nullable: true
-            description: Company ID
-            example: 7926
-          aoId:
-            type: integer
-            nullable: true
-            description: Accounting Office ID - NOT ADDED TO ENDPOINT, available from October 
-            example: 1
-        xml:
-          name: authdata
-    securitySchemes:
-      bearerAuth:            # arbitrary name for the security scheme
-        type: http
-        scheme: bearer
-        bearerFormat: JWT
-    responses:
-      UnauthorizedError:
-        description: Access token is missing or invalid    
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingOffice'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'        
+        '404':
+          description: Accounting office found
+      security:
+        - bearerAuth: []   
+  /api/partners/hrm/status:
+    put:
+      tags:
+        - HRM Status
+      description: Update of company, user and accounting office status information in HRM.
+      requestBody:
+        description: The user to create.
+        content:
+          text/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:         
+                  type: string
+                  description: Status in HRM
+                  enum:
+                    - ACTIVATED
+                    - ARCHIVED
+                userId:  
+                  type: integer
+                  description: User ID
+                  example: 8206
+                companyId:
+                  type: integer
+                  description: Company ID
+                  example: 7926
+                aoId:
+                  type: integer
+                  description: Accounting Office ID
+                  example: 1
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'        
+        '404':
+          description: Accounting office found
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+    Companies:
+      type: object
+      properties: 
+        id:
+          type: integer
+          description: Company ID
+          example: 6455
+        address:
+            $ref: '#/components/schemas/CompanyAddress'
+        name: 
+          type: string 
+          description: Company name
+          example: "Polski Cukier Janusz Nowak"
+        shortname: 
+          type: string
+          nullable: true
+          description: Company shortname
+          example: "Polski Cukier"
+        taxId:
+          type: array
+          nullable: true
+          description: Tax ID
+          items:
+            $ref: '#/components/schemas/TaxId'  
+        regon: 
+          type: string
+          nullable: true    
+          description: REGON
+          example: "013913354"
+        krs: 
+          type: string
+          nullable: true
+          description: KRS
+          example: "0000034671"
+        email: 
+          type: string
+          description: Company contact email
+          example: "test1@cashdirector.com"
+        phone: 
+          type: string
+          nullable: true
+          description: Company contact phone number
+          example: "48737321123"
+        managingAccountingOfficeId:
+          type: integer
+          nullable: true
+          description: Company accounting office ID
+          example: 1
+      xml:
+        name: companies
+    TaxId:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type of tax ID
+          example: "NIP"
+        value:
+          type: string
+          description: tax ID
+          example: "1568678909"
+      xml:
+        name: taxId     
+    CompanyAddress:
+      type: object
+      properties:
+        street:
+          type: string
+          nullable: true
+          description: Street
+          example: 'Serbska'
+        house:
+          type: string
+          nullable: true
+          description: House number
+          example: '31A'
+        flat:
+          type: string  
+          nullable: true
+          description: Flat number
+          example: '15'
+        postcode:
+          type: string
+          nullable: true
+          description: Postal code
+          example: '62-035'   
+        city:
+          type: string
+          nullable: true
+          description: City
+          example: 'Kórnik'  
+        district:
+          type: string
+          nullable: true
+          description: District
+          example: 'poznański' 
+        commune:
+          type: string
+          nullable: true
+          description: Commune
+          example: 'Kórnik'   
+        voivodeship:   
+          type: string
+          nullable: true 
+          description: Voivodeship
+          example: 'wielkopolskie' 
+        country:
+          type: string
+          nullable: true 
+          description: Country
+          example: 'PL'
+      xml:
+        name: companyAddress
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: User ID
+          example: 8706
+        email:
+          type: string
+          nullable: true 
+          description: User email address
+          example: "mklimkowski+testHRM@cashdirector.com"
+        firstname:
+          type: string
+          nullable: true 
+          description: First name
+          example: "Maciej"
+        lastname:
+          type: string
+          nullable: true 
+          description: Last name
+          example: "Testowy"
+        companyId:
+          type: integer
+          nullable: true
+          description: Company ID
+          example: 7926
+        aoId:
+          type: integer
+          nullable: true
+          description: Accounting Office ID  
+          example: 1
+      xml:
+        name: user
+    AccountingOffice:
+      type: object
+      properties: 
+        id: 
+          type: integer
+          description: Accounting Office ID
+          example: 6455
+        name:
+          type: string
+          description: Accounting Office name
+          example: "Biuro Księgowo-Podatkowe Maria Rybacka"
+        address:
+          $ref: '#/components/schemas/AccountingOfficeAddress'
+        shortname: 
+          type: string
+          nullable: true
+          description: Accounting Office shortname
+          example: "Biuro K-P Maria Rybacka"
+        taxId:
+            $ref: '#/components/schemas/TaxId'     
+        regon: 
+          type: string
+          nullable: true   
+          description: REGON
+          example: "212246151" 
+        email: 
+          type: string 
+          nullable: true 
+          description: Accounting Office contact email
+          example: "biurorach+test@cashdirector.com"
+        phone: 
+          type: string
+          nullable: true  
+          description: Accounting Office contact phone number
+          example: "48123123123"    
+      xml:
+        name: accountingOffice
+    AccountingOfficeAddress:
+      type: object
+      properties:
+        country:
+          type: string
+          nullable: true 
+          description: Country
+          example: 'PL' 
+        street:
+          type: string
+          nullable: true
+          description: Street
+          example: 'Wodna'
+        house:
+          type: string
+          nullable: true
+          description: House number
+          example: '100'
+        flat:
+          type: string  
+          nullable: true
+          description: Flat number
+          example: '33'
+        postcode:
+          type: string
+          nullable: true
+          description: Postal code
+          example: '61-618'
+        post:
+          type: string
+          nullable: true
+          description: Post
+          example: 'Poznań-Stare Miasto'
+        city:
+          type: string
+          nullable: true
+          description: City
+          example: 'Poznań' 
+        district:
+          type: string
+          nullable: true
+          description: District
+          example: 'poznań' 
+        commune:
+          type: string
+          nullable: true
+          description: Commune
+          example: 'Poznań'   
+        voivodeship:   
+          type: string
+          nullable: true 
+          description: Voivodeship
+          example: 'wielkopolskie'                
+      xml:
+        name: accountingOfficeAddress     
+    AuthData:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Authorisation token
+          example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE2NjE5NTQ3NDcsImV4cCI6MTY5Nzk1NDc0Nywic3ViIjoiNzY2MyJ9.C_3T3DP3ANMl0sWK89CWgRGuyzsa1C5uNbWnemiTsRuydAcnsBTjgBPX57cFOzBqPyWVYpGSqvcd8zDgSEingU5_oS6py6u1bFqILBWtFteYSpXzX6C1lbg00T2wDOTmzZmCXAXvoxXiNSZSsAUyWum9lJO8H_Q3knUDnbML_D5b5UbKWsClOXbHFMzrHWWb_wMZJErS85gFCTCqFJBg_GjJrs_qInpmeclvDdoCnchCntvfeFAvQIeiOC59cpmCbiVkJQneMiyjEi8_pmFqEDP26br98sE5v7H7cXzoITTK_iGA7TOhf43wD5YDL7UqsTrUndCkzwHJP8uM-86Pqg'
+        refreshToken:
+          type: string
+          description: Authorisation token refreshment token
+          example: 'efd0e40bf39d3fafce5e379bce45cfa49224a4af2c7af4cc7db6777f27585a57cccd99b9526b0afe0c22d3c306fb5312a1bb9d7311e5c9b93a5b899fd25335ac'
+        userId:
+          type: integer
+          description: User ID
+          example: 8206
+      xml:
+        name: authdata
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid    
